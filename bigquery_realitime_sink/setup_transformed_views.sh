@@ -34,11 +34,62 @@ if [ ! -f "$SQL_GE" ]; then
   exit 1
 fi
 
+TEMP_SQL_GE=$(mktemp)
 cat "$SQL_GE" | \
 sed "s/\${PROJECT_ID}/${PROJECT_ID}/g" | \
 sed "s/\${GE_TRANSFORMED_DATASET}/${GE_TRANSFORMED_DATASET}/g" | \
-sed "s/\${GE_DATASET_PREFIX}/${GE_DATASET_PREFIX}/g" | \
-bq query --use_legacy_sql=false --project_id="${PROJECT_ID}"
+sed "s/\${GE_DATASET_PREFIX}/${GE_DATASET_PREFIX}/g" > "$TEMP_SQL_GE"
+
+# Dynamic filtering for active tables in GE
+FILTERED_SQL_GE=$(mktemp)
+python3 -c "
+import sys, re, subprocess
+
+with open('$TEMP_SQL_GE') as f:
+    sql = f.read()
+
+lines = sql.splitlines()
+new_lines = []
+in_base_logs = False
+valid_unions = []
+
+for line in lines:
+    if 'WITH base_logs AS (' in line:
+        in_base_logs = True
+        new_lines.append(line)
+        continue
+    if in_base_logs and '), ' in line:
+        in_base_logs = False
+        # filter unions
+        filtered_unions = []
+        for u in valid_unions:
+            m = re.search(r'FROM \`([^\`]+)\`', u)
+            if m:
+                table_spec = m.group(1).rstrip('*')
+                ds_table = table_spec.split('.', 1)[1]
+                ds = ds_table.split('.')[0]
+                res = subprocess.run(['bq', 'ls', '--project_id=$PROJECT_ID', ds], capture_output=True, text=True)
+                if 'discoveryengine_googleapis_com_gemini_enterprise_user_activity' in res.stdout:
+                    filtered_unions.append(u)
+        if not filtered_unions:
+            # Fallback if no tables exist yet
+            filtered_unions.append('SELECT CAST(NULL AS STRING) as json_str, CAST(NULL AS TIMESTAMP) as timestamp')
+        new_lines.append('  ' + '\n  UNION ALL\n  '.join(filtered_unions))
+        new_lines.append(line)
+        continue
+    if in_base_logs:
+        clean_u = line.strip().replace('UNION ALL', '').strip()
+        if clean_u:
+            valid_unions.append(clean_u)
+    else:
+        new_lines.append(line)
+
+with open('$FILTERED_SQL_GE', 'w') as f:
+    f.write('\n'.join(new_lines))
+"
+
+bq query --use_legacy_sql=false --project_id="${PROJECT_ID}" < "$FILTERED_SQL_GE"
+rm -f "$TEMP_SQL_GE" "$FILTERED_SQL_GE"
 
 echo "----------------------------------------------------------------------"
 echo "[Caution] If you encounter a 'Not found: Table' error above, it means"
