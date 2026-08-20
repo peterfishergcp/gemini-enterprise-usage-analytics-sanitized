@@ -476,16 +476,18 @@ def get_metrics():
             SELECT
                 COALESCE(model, 'gemini-model') as model,
                 SUM(input_tokens) as input_tokens,
-                SUM(output_tokens) as output_tokens
+                SUM(output_tokens) as output_tokens,
+                SUM(input_tokens + output_tokens) as total_tokens
             FROM {token_view_ref}
             GROUP BY model
-            ORDER BY (SUM(input_tokens) + SUM(output_tokens)) DESC
+            ORDER BY total_tokens DESC
             LIMIT 5
         """
         try:
             tokens_model_res = list(bq_client.query(tokens_model_query).result())
             tokens_by_model = [{"model": r.model, "input_tokens": r.input_tokens or 0, "output_tokens": r.output_tokens or 0} for r in tokens_model_res]
-        except Exception:
+        except Exception as e:
+            print(f"Error querying tokens_by_model: {e}")
             tokens_by_model = []
 
         # Token Metrics 2: Daily Tokens Trend
@@ -497,12 +499,12 @@ def get_metrics():
             WHERE start_time IS NOT NULL
             GROUP BY date
             ORDER BY date ASC
-            LIMIT 30
         """
         try:
             daily_tokens_res = list(bq_client.query(daily_tokens_query).result())
             daily_tokens = [{"date": r.date, "total_tokens": r.total_tokens or 0} for r in daily_tokens_res]
-        except Exception:
+        except Exception as e:
+            print(f"Error querying daily_tokens: {e}")
             daily_tokens = []
 
         # Chart 1: Daily Session & Query Volume (Last 30 Days)
