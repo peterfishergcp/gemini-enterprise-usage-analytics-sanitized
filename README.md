@@ -2,6 +2,12 @@
 
 This repository contains tools to extract observability, user behaviors, and interaction metadata from Gemini Enterprise and NotebookLM products on Google Cloud Platform.
 
+## Dashboard Preview
+
+![Gemini Enterprise Usage Analytics Dashboard - Overview](docs/images/GE_dash_screenshot1.png)
+
+![Gemini Enterprise Usage Analytics Dashboard - Token Analytics](docs/images/GE_dash_screenshot2.png)
+
 ## Project Contents
 
 - **`deploy_all_sanitized.sh`**: Non-interactive automated deployment script taking parameters via environment variables.
