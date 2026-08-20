@@ -102,16 +102,39 @@ export NLM_TRANSFORMED_DATASET="nlm_transformed"  # Default: nlm_transformed
 ./deploy_all_sanitized.sh
 ```
 
-### Interactive Wizard Mode
+### Interactive Setup Wizard
 
-Alternatively, you can run the interactive wizard:
+If you prefer a guided terminal setup rather than setting environment variables, you can run the interactive setup wizard:
 
 ```bash
 cd bigquery_realitime_sink
 ./interactive_runner.sh
 ```
 
-Enjoy your usage analytics dashboards!
+> **Note**: `interactive_runner.sh` is an interactive CLI wizard that prompts for your `PROJECT_ID`, `APP_ID`, and dataset preferences, previews the BigQuery architecture, and provisions all log sinks, datasets, and SQL views sequentially.
+
+---
+
+## Running the Web Dashboard Locally
+
+You can also run and preview the analytics dashboard web server locally on your workstation before or instead of deploying to Cloud Run:
+
+```bash
+cd dashboard
+
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Set environment variables (pointing to your GCP project)
+export PROJECT_ID="your_project_id"
+export GE_TRANSFORMED_DATASET="ge_transformed"
+export GE_VIEW="ge_logs"
+
+# 3. Start local development server
+python app.py
+```
+
+Open **`http://127.0.0.1:8080`** in your browser to view the interactive dashboard locally!
 
 ## Acknowledgements & Attribution
 
