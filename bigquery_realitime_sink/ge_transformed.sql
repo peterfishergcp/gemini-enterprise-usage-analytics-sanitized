@@ -5,22 +5,22 @@ CREATE OR REPLACE VIEW `${PROJECT_ID}.${GE_TRANSFORMED_DATASET}.ge_logs` AS
 
 -- CTE 1: Gathers all raw log tables, bridging both the new active table and the legacy history table seamlessly
 WITH base_logs AS (
-  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}search.discoveryengine_googleapis_com_gemini_enterprise_user_activity*` UNION ALL
+  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}search.discoveryengine_googleapis_com_gemini_enterprise_user_activity_*` UNION ALL
   SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}search.discoveryengine_googleapis_com_gemini_enterprise_user_activity_legacy*` UNION ALL
-  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}assist.discoveryengine_googleapis_com_gemini_enterprise_user_activity*` UNION ALL
-  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}streamassist.discoveryengine_googleapis_com_gemini_enterprise_user_activity*` UNION ALL
-  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}answerquery.discoveryengine_googleapis_com_gemini_enterprise_user_activity*` UNION ALL
-  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}createengine.discoveryengine_googleapis_com_gemini_enterprise_user_activity*` UNION ALL
-  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}updateengine.discoveryengine_googleapis_com_gemini_enterprise_user_activity*` UNION ALL
-  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}setiampolicy.discoveryengine_googleapis_com_gemini_enterprise_user_activity*` UNION ALL
-  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}createagent.discoveryengine_googleapis_com_gemini_enterprise_user_activity*` UNION ALL
-  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}updateagent.discoveryengine_googleapis_com_gemini_enterprise_user_activity*` UNION ALL
-  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}createagentrequest.discoveryengine_googleapis_com_gemini_enterprise_user_activity*` UNION ALL
-  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}generategroundedcontent.discoveryengine_googleapis_com_gemini_enterprise_user_activity*` UNION ALL
-  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}updatedataconnector.discoveryengine_googleapis_com_gemini_enterprise_user_activity*` UNION ALL
-  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}addcontextfile.discoveryengine_googleapis_com_gemini_enterprise_user_activity*` UNION ALL
-  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}uploadsessionfile.discoveryengine_googleapis_com_gemini_enterprise_user_activity*` UNION ALL
-  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}writeuserevent.discoveryengine_googleapis_com_gemini_enterprise_user_activity*`
+  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}assist.discoveryengine_googleapis_com_gemini_enterprise_user_activity_*` UNION ALL
+  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}streamassist.discoveryengine_googleapis_com_gemini_enterprise_user_activity_*` UNION ALL
+  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}answerquery.discoveryengine_googleapis_com_gemini_enterprise_user_activity_*` UNION ALL
+  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}createengine.discoveryengine_googleapis_com_gemini_enterprise_user_activity_*` UNION ALL
+  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}updateengine.discoveryengine_googleapis_com_gemini_enterprise_user_activity_*` UNION ALL
+  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}setiampolicy.discoveryengine_googleapis_com_gemini_enterprise_user_activity_*` UNION ALL
+  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}createagent.discoveryengine_googleapis_com_gemini_enterprise_user_activity_*` UNION ALL
+  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}updateagent.discoveryengine_googleapis_com_gemini_enterprise_user_activity_*` UNION ALL
+  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}createagentrequest.discoveryengine_googleapis_com_gemini_enterprise_user_activity_*` UNION ALL
+  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}generategroundedcontent.discoveryengine_googleapis_com_gemini_enterprise_user_activity_*` UNION ALL
+  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}updatedataconnector.discoveryengine_googleapis_com_gemini_enterprise_user_activity_*` UNION ALL
+  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}addcontextfile.discoveryengine_googleapis_com_gemini_enterprise_user_activity_*` UNION ALL
+  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}uploadsessionfile.discoveryengine_googleapis_com_gemini_enterprise_user_activity_*` UNION ALL
+  SELECT TO_JSON_STRING(jsonPayload) as json_str, timestamp FROM `${PROJECT_ID}.${GE_DATASET_PREFIX}writeuserevent.discoveryengine_googleapis_com_gemini_enterprise_user_activity_*`
 ),
 
 -- CTE 2: Engine to Name mappings

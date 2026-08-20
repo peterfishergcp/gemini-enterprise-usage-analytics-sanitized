@@ -58,7 +58,7 @@ for line in lines:
         in_base_logs = True
         new_lines.append(line)
         continue
-    if in_base_logs and '), ' in line:
+    if in_base_logs and (line.strip().startswith('),') or 'agent_mappings AS (' in line):
         in_base_logs = False
         # filter unions
         filtered_unions = []

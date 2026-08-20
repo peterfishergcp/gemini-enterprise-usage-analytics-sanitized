@@ -96,6 +96,48 @@ HTML_TEMPLATE = """
         </div>
     </div>
 
+    <!-- Token Usage Analytics Section Header -->
+    <div class="flex items-center gap-3 mb-6 mt-4">
+        <div class="p-2 bg-amber-500/20 text-amber-400 rounded-lg border border-amber-500/30">
+            <i class="fa-solid fa-coins text-lg"></i>
+        </div>
+        <div>
+            <h2 class="text-xl font-bold text-white tracking-tight">Token Consumption Analytics</h2>
+            <p class="text-slate-400 text-xs">Real-time LLM input and output token telemetry from Cloud Trace spans</p>
+        </div>
+    </div>
+
+    <!-- Token Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <!-- Token Chart 1: Token Usage by Model -->
+        <div class="glass-card p-6 rounded-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-lg font-bold text-white">Token Usage by Model</h3>
+                    <p class="text-slate-400 text-xs">Input vs Output token breakdown by Gemini model</p>
+                </div>
+                <span class="px-2.5 py-1 text-xs bg-slate-800 text-slate-300 rounded-md font-mono">Models</span>
+            </div>
+            <div class="h-72">
+                <canvas id="tokensByModelChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Token Chart 2: Top Token Consuming Models / Users -->
+        <div class="glass-card p-6 rounded-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-lg font-bold text-white">Daily Token Usage Trend</h3>
+                    <p class="text-slate-400 text-xs">Total token volume consumed per day</p>
+                </div>
+                <span class="px-2.5 py-1 text-xs bg-slate-800 text-slate-300 rounded-md font-mono">Daily</span>
+            </div>
+            <div class="h-72">
+                <canvas id="dailyTokensChart"></canvas>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Charts Section -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <!-- Chart 1: Daily Session Volume -->
@@ -138,14 +180,14 @@ HTML_TEMPLATE = """
                 </div>
             </div>
             <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm text-slate-300">
-                    <thead class="bg-slate-800/60 text-slate-400 text-xs uppercase tracking-wider border-b border-slate-700/50">
-                        <tr>
-                            <th class="py-3 px-4">User Prompt / Query</th>
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="border-b border-slate-700/60 text-slate-400 text-xs font-semibold uppercase">
+                            <th class="py-3 px-4">User Query</th>
                             <th class="py-3 px-4 text-right">Count</th>
                         </tr>
                     </thead>
-                    <tbody id="top-queries-table-body" class="divide-y divide-slate-800">
+                    <tbody id="top-queries-table-body" class="divide-y divide-slate-800/60">
                         <tr><td colspan="2" class="py-4 text-center text-slate-500">Loading queries...</td></tr>
                     </tbody>
                 </table>
@@ -169,6 +211,8 @@ HTML_TEMPLATE = """
     <script>
         let dailyChartInstance = null;
         let topUsersChartInstance = null;
+        let tokensByModelChartInstance = null;
+        let dailyTokensChartInstance = null;
 
         async function fetchMetrics() {
             const refreshIcon = document.getElementById('refresh-icon');
@@ -183,6 +227,10 @@ HTML_TEMPLATE = """
                 document.getElementById('stat-unique-users').innerText = data.kpis.unique_users.toLocaleString();
                 document.getElementById('stat-total-sessions').innerText = data.kpis.total_sessions.toLocaleString();
                 document.getElementById('stat-active-engines').innerText = data.kpis.active_engines.toLocaleString();
+
+                // Render Token Charts
+                if (data.tokens_by_model) renderTokensByModelChart(data.tokens_by_model);
+                if (data.daily_tokens) renderDailyTokensChart(data.daily_tokens);
 
                 // Render Daily Volume Chart
                 renderDailyChart(data.daily_volume);
@@ -201,6 +249,84 @@ HTML_TEMPLATE = """
             } finally {
                 refreshIcon.classList.remove('animate-spin');
             }
+        }
+
+        function renderTokensByModelChart(tokensData) {
+            const ctx = document.getElementById('tokensByModelChart').getContext('2d');
+            const labels = tokensData.map(t => t.model || 'Unknown');
+            const inputTokens = tokensData.map(t => t.input_tokens);
+            const outputTokens = tokensData.map(t => t.output_tokens);
+
+            if (tokensByModelChartInstance) tokensByModelChartInstance.destroy();
+
+            tokensByModelChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Input Tokens',
+                            data: inputTokens,
+                            backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                            borderColor: '#3b82f6',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Output Tokens',
+                            data: outputTokens,
+                            backgroundColor: 'rgba(245, 158, 11, 0.7)',
+                            borderColor: '#f59e0b',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#94a3b8' } } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
+                        y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8', beginAtZero: true } }
+                    }
+                }
+            });
+        }
+
+        function renderDailyTokensChart(dailyTokensData) {
+            const ctx = document.getElementById('dailyTokensChart').getContext('2d');
+            const labels = dailyTokensData.map(d => d.date);
+            const totalTokens = dailyTokensData.map(d => d.total_tokens);
+
+            if (dailyTokensChartInstance) dailyTokensChartInstance.destroy();
+
+            dailyTokensChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total Tokens',
+                        data: totalTokens,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3,
+                        pointBackgroundColor: '#34d399',
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } },
+                        y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8', beginAtZero: true } }
+                    }
+                }
+            });
         }
 
         function renderDailyChart(dailyData) {
@@ -325,6 +451,7 @@ def index():
 @app.route("/api/metrics")
 def get_metrics():
     table_ref = f"`{PROJECT_ID}.{GE_DATASET}.{GE_VIEW}`"
+    token_view_ref = f"`{PROJECT_ID}.agent_analytics.gemini_token_usage_by_user`"
     
     try:
         # KPI 1: Summary Counts
@@ -343,6 +470,40 @@ def get_metrics():
             "total_sessions": kpi_res.total_sessions or 0,
             "active_engines": kpi_res.active_engines or 0
         }
+
+        # Token Metrics 1: Token Usage by Model
+        tokens_model_query = f"""
+            SELECT
+                COALESCE(model, 'gemini-model') as model,
+                SUM(input_tokens) as input_tokens,
+                SUM(output_tokens) as output_tokens
+            FROM {token_view_ref}
+            GROUP BY model
+            ORDER BY (SUM(input_tokens) + SUM(output_tokens)) DESC
+            LIMIT 5
+        """
+        try:
+            tokens_model_res = list(bq_client.query(tokens_model_query).result())
+            tokens_by_model = [{"model": r.model, "input_tokens": r.input_tokens or 0, "output_tokens": r.output_tokens or 0} for r in tokens_model_res]
+        except Exception:
+            tokens_by_model = []
+
+        # Token Metrics 2: Daily Tokens Trend
+        daily_tokens_query = f"""
+            SELECT
+                FORMAT_DATE('%Y-%m-%d', DATE(start_time)) as date,
+                SUM(input_tokens + output_tokens) as total_tokens
+            FROM {token_view_ref}
+            WHERE start_time IS NOT NULL
+            GROUP BY date
+            ORDER BY date ASC
+            LIMIT 30
+        """
+        try:
+            daily_tokens_res = list(bq_client.query(daily_tokens_query).result())
+            daily_tokens = [{"date": r.date, "total_tokens": r.total_tokens or 0} for r in daily_tokens_res]
+        except Exception:
+            daily_tokens = []
 
         # Chart 1: Daily Session & Query Volume (Last 30 Days)
         daily_query = f"""
@@ -400,6 +561,8 @@ def get_metrics():
 
         return jsonify({
             "kpis": kpis,
+            "tokens_by_model": tokens_by_model,
+            "daily_tokens": daily_tokens,
             "daily_volume": daily_volume,
             "top_users": top_users,
             "top_queries": top_queries,
