@@ -24,10 +24,11 @@ gcloud run deploy "${SERVICE_NAME}" \
   --region "${REGION}" \
   --allow-unauthenticated \
   --set-env-vars "PROJECT_ID=${PROJECT_ID},GE_TRANSFORMED_DATASET=ge_transformed,GE_VIEW=ge_logs" \
-  --memory "512Mi" \
-  --cpu "1" \
-  --min-instances "0" \
-  --max-instances "2"
+  --memory "2Gi" \
+  --cpu "2" \
+  --cpu-boost \
+  --min-instances "1" \
+  --max-instances "5"
 
 echo ""
 echo "======================================================================"
