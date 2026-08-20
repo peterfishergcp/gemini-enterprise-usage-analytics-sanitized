@@ -53,7 +53,7 @@ echo ""
 echo "🚀 Deploying infrastructure sequentially..."
 echo ""
 
-chmod +x setup_user_logs_raw.sh setup_transformed_views.sh ../enable_audit_logging.sh
+chmod +x setup_user_logs_raw.sh setup_transformed_views.sh ../enable_audit_logging.sh ../token_analytics_setup/setup_token_tracing.sh
 
 echo "[Step 0] Enabling Global Usage Audit Logging..."
 ../enable_audit_logging.sh
@@ -65,6 +65,10 @@ echo "[Step 1] Deploying Raw Isolated Pipelines..."
 echo ""
 echo "[Step 2] Deploying Transformed Flattened Views..."
 ./setup_transformed_views.sh
+
+echo ""
+echo "[Step 3] Deploying Token Usage Tracing Link & View..."
+../token_analytics_setup/setup_token_tracing.sh
 
 echo ""
 echo "Creating summary.txt..."

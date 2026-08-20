@@ -35,7 +35,7 @@ if [ "$PROJECT_ID" = "your_project_id" ] || [ -z "$PROJECT_ID" ]; then
     exit 1
 fi
 
-chmod +x enable_audit_logging.sh bigquery_realitime_sink/setup_user_logs_raw.sh bigquery_realitime_sink/setup_transformed_views.sh
+chmod +x enable_audit_logging.sh bigquery_realitime_sink/setup_user_logs_raw.sh bigquery_realitime_sink/setup_transformed_views.sh token_analytics_setup/setup_token_tracing.sh
 
 echo ""
 echo "[Step 1] Enabling Global Usage Audit Logging..."
@@ -49,6 +49,11 @@ cd bigquery_realitime_sink
 echo ""
 echo "[Step 3] Deploying Consolidated Transformed Views..."
 ./setup_transformed_views.sh
+cd ..
+
+echo ""
+echo "[Step 4] Deploying Token Usage Tracing Link & View..."
+./token_analytics_setup/setup_token_tracing.sh
 
 echo ""
 echo "======================================================================"
