@@ -12,7 +12,22 @@ By linking Cloud Trace (`_Trace` bucket) spans with user activity log sinks in B
 
 ---
 
-## Step 1: Set up Log Sinks to BigQuery
+## Step 1: Enable Observability on the Engine
+
+You must enable observability on your Gemini Enterprise engine (app) so it emits traces and logs:
+
+1. In the Google Cloud Console, navigate to **Gemini Enterprise** (or Search and Conversation).
+2. Select your **Engine/App**.
+3. Go to **Configurations** -> **Observability** tab.
+4. Enable the following settings:
+   - **Enable instrumentation of OpenTelemetry traces and logs**
+   - **Enable logging of prompt inputs and response outputs (Sensitive Logging)**
+
+> **Important**: Sensitive logging must be enabled to capture the actual text of the user queries.
+
+---
+
+## Step 2: Set up Log Sinks to BigQuery
 
 Ensure your Cloud Logging sinks are configured for Gemini Enterprise activity.
 
@@ -34,7 +49,7 @@ Ensure your Cloud Logging sinks are configured for Gemini Enterprise activity.
 
 ---
 
-## Step 2: Create Logging Link for Trace Data
+## Step 3: Create Logging Link for Trace Data
 
 Run this command in your terminal (authenticated to your project):
 
@@ -49,7 +64,7 @@ This creates a read-only linked dataset in BigQuery named `trace_link` containin
 
 ---
 
-## Step 3: Create the Unified Real-Time View
+## Step 4: Create the Unified Real-Time View
 
 Run `setup_token_tracing.sh` or execute the following SQL DDL in BigQuery:
 
@@ -102,9 +117,25 @@ ON
 
 ---
 
-## Step 4: Automated Setup Command
+## Step 5: Verification (End-to-End Test)
 
-You can execute the setup script non-interactively:
+1. Go to the **Gemini Enterprise Preview** tab for your engine.
+2. Send a test query: *"testing my newly created big query view for tracking tokens"*.
+3. Wait 1–2 minutes for logs and trace spans to propagate.
+4. Query the view in BigQuery:
+   ```sql
+   SELECT * 
+   FROM `[PROJECT_ID].agent_analytics.gemini_token_usage_by_user` 
+   ORDER BY start_time DESC 
+   LIMIT 5;
+   ```
+5. Verify output shows your query, user principal, model, and token counts (`input_tokens`, `output_tokens`).
+
+---
+
+## Automated Setup Command
+
+You can execute the setup script non-interactively to perform Steps 3 & 4 automatically:
 
 ```bash
 export PROJECT_ID="your_project_id"
