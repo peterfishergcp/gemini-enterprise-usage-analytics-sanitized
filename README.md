@@ -117,7 +117,13 @@ cd bigquery_realitime_sink
 
 ## Running the Web Dashboard Locally
 
-You can also run and preview the analytics dashboard web server locally on your workstation before or instead of deploying to Cloud Run:
+You can also run and preview the analytics dashboard web server locally on your workstation before or instead of deploying to Cloud Run.
+
+> **Important**: Ensure you are authenticated to Google Cloud with Application Default Credentials so the local server can query BigQuery:
+> ```bash
+> gcloud auth application-default login
+> gcloud config set project "your_project_id"
+> ```
 
 ```bash
 cd dashboard
