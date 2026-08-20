@@ -56,3 +56,7 @@ cd bigquery_realitime_sink
 ```
 
 Enjoy your usage analytics dashboards!
+
+## Acknowledgements & Attribution
+
+Special thanks to **Upasana Pati** for her work on [usage auditing](https://github.com/upasana1105/UP_Demos/tree/main/gemini-enterprise-usage-analytics) and [observability](https://github.com/upasana1105/UP_Demos/tree/main/gemini_enterprise_observability).
